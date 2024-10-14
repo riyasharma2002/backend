@@ -2,26 +2,27 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const multer = require('multer');
-const cors = require('cors');  // Include CORS
+const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
 
 const app = express();
 
+
 app.use(cors({
-    origin: 'https://gleaming-figolla-48f2ae.netlify.app/', 
+    origin: 'https://gleaming-figolla-48f2ae.netlify.app',  // Use your actual Netlify frontend URL
     methods: ['GET', 'POST']
 }));
 
 app.use(bodyParser.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); // Static route for image access
 
-// MongoDB connection
+
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => console.log('MongoDB connected'))
     .catch(err => console.error('MongoDB connection error:', err));
 
-// Define the user schema
+
 const userSchema = new mongoose.Schema({
     name: { type: String, required: true },
     socialMediaHandle: { type: String, required: true },
@@ -30,7 +31,7 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model('User', userSchema);
 
-// Configure Multer for file uploads
+
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, 'uploads/'); // Path where images will be stored
@@ -42,7 +43,8 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-app.post('/submit', upload.array('images', 10), async (req, res) => {
+
+app.post('/api/submit', upload.array('images', 10), async (req, res) => {
     const { name, socialMediaHandle } = req.body;
     const imagePaths = req.files.map(file => file.path); // Store paths of uploaded images
 
@@ -64,8 +66,8 @@ app.post('/submit', upload.array('images', 10), async (req, res) => {
     }
 });
 
-// Endpoint to retrieve submissions for the admin dashboard (GET /submissions)
-app.get('/submissions', async (req, res) => {
+
+app.get('/api/submissions', async (req, res) => {
     try {
         const submissions = await User.find(); // Retrieve all user submissions
         res.json(submissions);
@@ -73,11 +75,13 @@ app.get('/submissions', async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch submissions' });
     }
 });
+app.get('/',(req,res)=>{
+    res.send({
+        activeStatus : true,
+        error:false,
+    })
+})
 
-app.use(express.static(path.join(__dirname, 'frontend/build')));
-app.get('*', (req, res) => {
-    res.sendFile(path.resolve(__dirname, 'frontend', 'build', 'index.html'));
-});
-
+// Define the port and start the server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
