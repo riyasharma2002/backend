@@ -70,7 +70,7 @@ app.get('/submissions', async (req, res) => {
     }
 });
 
-// Serve the frontend (if you want to serve static files like React frontend from the same backend)
+
 app.use(express.static(path.join(__dirname, 'frontend/build')));
 app.get('*', (req, res) => {
     res.sendFile(path.resolve(__dirname, 'frontend', 'build', 'index.html'));
