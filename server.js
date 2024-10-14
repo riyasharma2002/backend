@@ -2,12 +2,17 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const multer = require('multer');
-const cors = require('cors');
+const cors = require('cors');  // Include CORS
 const bodyParser = require('body-parser');
 const path = require('path');
 
 const app = express();
-app.use(cors());
+
+app.use(cors({
+    origin: 'https://gleaming-figolla-48f2ae.netlify.app/', 
+    methods: ['GET', 'POST']
+}));
+
 app.use(bodyParser.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); // Static route for image access
 
@@ -37,7 +42,6 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// Endpoint to handle form submission (POST /submit)
 app.post('/submit', upload.array('images', 10), async (req, res) => {
     const { name, socialMediaHandle } = req.body;
     const imagePaths = req.files.map(file => file.path); // Store paths of uploaded images
@@ -69,7 +73,6 @@ app.get('/submissions', async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch submissions' });
     }
 });
-
 
 app.use(express.static(path.join(__dirname, 'frontend/build')));
 app.get('*', (req, res) => {
